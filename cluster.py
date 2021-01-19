@@ -18,9 +18,11 @@ print("[INFO] Loading encodings data...")
 data = pickle.loads(open('faces/faces.pickle', "rb").read())
 data = np.array(data)
 encodings = [d["encoding"] for d in data]
+for d in data:
+    d['cluster'] = -1
 
 print("[INFO] Clustering the data...")
-clt = DBSCAN(metric="euclidean", n_jobs=-1, eps=0.35)
+clt = DBSCAN(metric="euclidean", n_jobs=-1, eps=0.32)
 clt.fit(encodings)
 
 labelIDs = np.unique(clt.labels_)
@@ -28,14 +30,19 @@ numUniqueFaces = len(np.where(labelIDs > -1)[0])
 print("[INFO] # unique faces: {}".format(numUniqueFaces))
 
 for labelID in labelIDs:
-	print("[INFO] Faces for face ID: {}".format(labelID))
-	idxs = np.where(clt.labels_ == labelID)[0]
-	idxs = np.random.choice(idxs, size=min(25, len(idxs)), replace=False)
+    print("[INFO] Faces for face ID: {}".format(labelID))
+    idxs = np.where(clt.labels_ == labelID)[0]
+    idxs = np.random.choice(idxs, size=min(25, len(idxs)), replace=False)
 
-	for i in idxs:
-		image = cv2.imread('photos/'+data[i]["imagePath"])
-		(top, right, bottom, left) = data[i]["loc"]
-		face = image[top:bottom, left:right]
+    for i in idxs:
+        image = cv2.imread('photos/'+data[i]["imagePath"])
+        (top, right, bottom, left) = data[i]["loc"]
+        face = image[top:bottom, left:right]
+        face = cv2.resize(face, (96, 96))
+        move_image(face,i,labelID)
+        data[i]["cluster"] = labelID
 
-		face = cv2.resize(face, (96, 96))
-		move_image(face,i,labelID)
+print("[INFO] Writing encodings to file...")
+f = open('faces/cluster.pickle', "wb")
+f.write(pickle.dumps(data))
+f.close()
