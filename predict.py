@@ -62,7 +62,6 @@ class App():
         self.t2.start()
         print("[INFO] Started display thread...")
     
-    
     def load_face_data(self):
         self.data = pickle.loads(open('faces/cluster.pickle', "rb").read())
         self.known_face_encodings = []
@@ -81,6 +80,7 @@ class App():
             print("[Error] Not able to capture frame from camera...")
             img = None
         else:
+            print("[INFO] Camera image shape", img.shape)
             img = img.copy()
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
@@ -141,7 +141,7 @@ class App():
         if max_width/float(width) < scaling_factor:
             scaling_factor = max_width / float(width)
         new_image = cv2.resize(image, None, fx=scaling_factor, fy=scaling_factor, interpolation=cv2.INTER_AREA)
-            
+
         return new_image
 
     def set_image(self, new_image):
@@ -166,7 +166,7 @@ class App():
                         small_cam_image = self.resize_image(self.cam_image, 150, 150)
                         original_image[10:10+small_cam_image.shape[0], 10:10+small_cam_image.shape[1]] = small_cam_image
 
-                    resized = self.resize_image(original_image, self.w, self.h)
+                    resized = self.resize_image(original_image, self.display.width, self.display.height)
                 else:
                     print("[INFO] Image not loaded from file...")
                     
