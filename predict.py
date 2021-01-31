@@ -2,33 +2,67 @@ import numpy as np
 import pickle
 import face_recognition
 import cv2
-from PIL import Image, ImageTk
-import tkinter as tk
+from PIL import Image
 import os
 from threading import *
 import time 
+from IT8951.display import AutoEPDDisplay
+from IT8951.display import VirtualEPDDisplay
+from IT8951 import constants
 
-class App(tk.Tk):
+class Display():
+    self.display = None
+    
+    def init_display(self, virtual=False):
+        print('[INFO] Initializing E-Paper Display')
+        # Rotation: 'None', 'CW', 'CCW', 'flip'
+        if virtual:
+            self.display = VirtualEPDDisplay(dims=(1872, 1404), rotate=None)
+        else:
+            self.display = AutoEPDDisplay(vcom=-2.06, rotate=None, spi_hz=24000000)
+            print('[INFO] VCOM set to', self.display.epd.get_vcom())
+        
+    def print_system_info(self):
+        epd = self.display.epd
+        print('[INFO] Display info:')
+        print('  display size: {}x{}'.format(self.display.epd.width, self.display.epd.height))
+        print('  img buffer address: {:X}'.format(self.display.epd.img_buf_address))
+        print('  firmware version: {}'.format(self.display.epd.firmware_version))
+        print('  LUT version: {}'.format(self.display.epd.lut_version))
+
+    def clear(self):
+        print('[INFO] Clearing display...')
+        self.display.clear()
+
+    def display_image(self, image):
+        self.display.frame_buf.paste(0xFF, box=(0, 0, display.width, display.height))
+        dims = (self.display.width, self.display.height)
+        image.thumbnail(dims)
+        paste_coords = [dims[i] - image.size[i] for i in (0,1)]  # align image with bottom of display
+        self.display.frame_buf.paste(image, paste_coords)
+        self.display.draw_full(constants.DisplayModes.GC16)
+
+class App():
     def __init__(self):
-        tk.Tk.__init__(self)
-        self.w = 512
-        self.h = 384
-        self.is_window_closed = False
-        self.geometry("%dx%d+0+0" % (self.w, self.h))
+        self.display = Display()
+        self.display.init_display()
+        self.display.print_system_info()
+        self.display.clear()
+        
         self.pictures = []
-        self.picture_display = tk.Label(self)
-        self.picture_display.pack(expand=True, fill="both")
-
         self.track_img_ndex = 0
         self.face_clusters_found = self.prev_face_clusters_found = []
         self.cam_image = None
-        self.load_face_data()
 
+    def start_threads(self):
         self.t1 = Thread(target=self.find_faces) 
         self.t2 = Thread(target=self.show_slides) 
         self.t1.start()
+        print("[INFO] Started camera thread...")
         self.t2.start()
-                
+        print("[INFO] Started display thread...")
+    
+    
     def load_face_data(self):
         self.data = pickle.loads(open('faces/cluster.pickle', "rb").read())
         self.known_face_encodings = []
@@ -81,8 +115,7 @@ class App(tk.Tk):
         print("[INFO] Setting new pictures: ", image_paths)
         self.pictures = image_paths
         self.track_img_ndex = 0
-        self.picture_display.config(image=None)
-        self.picture_display.image = None
+        self.display.clear()
 
     def find_faces(self):
         while not self.is_window_closed:
@@ -113,13 +146,12 @@ class App(tk.Tk):
 
     def set_image(self, new_image):
         if new_image is not None:
-            new_image = ImageTk.PhotoImage(Image.fromarray(new_image))
-            
-        self.picture_display.config(image=new_image)
-        self.picture_display.image = new_image
+            new_image = Image.fromarray(new_image)
+        
+        self.display.display_image(new_image)
 
     def show_slides(self):
-        while not self.is_window_closed:
+        while True:
             if self.track_img_ndex >= len(self.pictures):
                 self.track_img_ndex = 0
 
@@ -136,20 +168,16 @@ class App(tk.Tk):
                         original_image[10:10+small_cam_image.shape[0], 10:10+small_cam_image.shape[1]] = small_cam_image
 
                     resized = self.resize_image(original_image, self.w, self.h)
-                    self.title(os.path.basename(x))
                 else:
                     print("[INFO] Image not loaded from file...")
                     
                 self.set_image(resized)
 
-            time.sleep(2)
+            time.sleep(3)
 
-    def on_close(self):
-        print("[INFO] Window closed...")
-        self.is_window_closed = True
-        self.destroy()
-        
 
-app = App()
-app.protocol("WM_DELETE_WINDOW", app.on_close)
-app.mainloop()
+if __name__ == '__main__':
+    app = App()
+    app.load_face_data()
+    app.start_threads()
+
