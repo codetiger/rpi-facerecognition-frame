@@ -6,19 +6,19 @@ from PIL import Image
 import os
 from threading import *
 import time 
-from IT8951.display import AutoEPDDisplay
-from IT8951.display import VirtualEPDDisplay
 from IT8951 import constants
 
 class Display():
-    self.display = None
+    display = None
     
     def init_display(self, virtual=False):
         print('[INFO] Initializing E-Paper Display')
         # Rotation: 'None', 'CW', 'CCW', 'flip'
         if virtual:
+            from IT8951.display import VirtualEPDDisplay
             self.display = VirtualEPDDisplay(dims=(1872, 1404), rotate=None)
         else:
+            from IT8951.display import AutoEPDDisplay
             self.display = AutoEPDDisplay(vcom=-2.06, rotate=None, spi_hz=24000000)
             print('[INFO] VCOM set to', self.display.epd.get_vcom())
         

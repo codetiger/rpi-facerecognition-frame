@@ -1,0 +1,7 @@
+RPi.GPIO
+pillow
+numpy
+face_recognition
+pickle5
+opencv-python
+scikit-learn
