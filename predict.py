@@ -120,7 +120,6 @@ class App():
         print("[INFO] Setting new pictures: ", image_paths)
         self.pictures = image_paths
         self.track_img_ndex = 0
-        self.display.clear()
 
     def find_faces(self):
         while True:
