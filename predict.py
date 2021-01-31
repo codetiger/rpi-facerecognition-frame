@@ -40,6 +40,7 @@ class Display():
         self.display.clear()
 
     def display_image(self, image):
+        print('[INFO] Setting new image to display...')
         self.display.frame_buf.paste(0xFF, box=(0, 0, self.display.width, self.display.height))
         dims = (self.display.width, self.display.height)
         image.thumbnail(dims)
