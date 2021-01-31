@@ -147,8 +147,7 @@ class App():
     def set_image(self, new_image):
         if new_image is not None:
             new_image = Image.fromarray(new_image)
-        
-        self.display.display_image(new_image)
+            self.display.display_image(new_image)
 
     def show_slides(self):
         while True:
