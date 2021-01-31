@@ -172,6 +172,8 @@ class App():
                     print("[INFO] Image not loaded from file...")
                     
                 self.set_image(resized)
+            else:
+                self.set_image(self.cam_image)
 
             time.sleep(3)
 
