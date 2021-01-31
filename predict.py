@@ -118,7 +118,7 @@ class App():
         self.display.clear()
 
     def find_faces(self):
-        while not self.is_window_closed:
+        while True:
             self.cam_image = self.get_camera_image()
             if self.cam_image is not None:
                 self.face_clusters_found = self.get_image_features(self.cam_image)
