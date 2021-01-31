@@ -38,8 +38,7 @@ class Display():
         self.display.frame_buf.paste(0xFF, box=(0, 0, self.display.width, self.display.height))
         dims = (self.display.width, self.display.height)
         image.thumbnail(dims)
-        paste_coords = [dims[i] - image.size[i] for i in (0,1)]  # align image with bottom of display
-        self.display.frame_buf.paste(image, paste_coords)
+        self.display.frame_buf.paste(image, (0, 0, image.size[0], image.size[1]))
         self.display.draw_full(constants.DisplayModes.GC16)
 
 class App():
