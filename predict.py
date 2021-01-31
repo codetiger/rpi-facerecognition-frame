@@ -10,6 +10,8 @@ from IT8951 import constants
 
 class Display():
     display = None
+    width = 0
+    height = 0
     
     def init_display(self, virtual=False):
         print('[INFO] Initializing E-Paper Display')
@@ -21,6 +23,9 @@ class Display():
             from IT8951.display import AutoEPDDisplay
             self.display = AutoEPDDisplay(vcom=-2.06, rotate=None, spi_hz=24000000)
             print('[INFO] VCOM set to', self.display.epd.get_vcom())
+            
+        self.width = self.display.epd.width
+        self.height = self.display.epd.height
         
     def print_system_info(self):
         epd = self.display.epd
