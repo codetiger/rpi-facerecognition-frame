@@ -4,24 +4,27 @@ import pickle
 import os
 import math
 from PIL import Image
+import logging
 
-print("[INFO] Loading encodings data...")
+logging.basicConfig(format='[%(asctime)s] [%(levelname)s] %(message)s', level=logging.INFO)
+
+logging.info("Loading encodings data...")
 data = pickle.loads(open('faces/faces.pickle', "rb").read())
 data = np.array(data)
 encodings = [d["encoding"] for d in data]
 for d in data:
     d['cluster'] = -1
 
-print("[INFO] Clustering the data...")
+logging.info("Clustering the data...")
 clt = DBSCAN(metric="euclidean", n_jobs=-1, eps=0.32)
 clt.fit(encodings)
 
 labelIDs = np.unique(clt.labels_)
 numUniqueFaces = len(np.where(labelIDs > -1)[0])
-print("[INFO] Unique face Count: {}".format(numUniqueFaces))
+logging.info("Unique face Count: {}".format(numUniqueFaces))
 
 for labelID in labelIDs:
-    print("[INFO] Faces for face ID: {}".format(labelID))
+    logging.info("Faces for face ID: {}".format(labelID))
     idxs = np.where(clt.labels_ == labelID)[0]
     idxs = np.random.choice(idxs, size=min(25, len(idxs)), replace=False)
     face_count = len(idxs)
@@ -41,10 +44,10 @@ for labelID in labelIDs:
         data[i]["cluster"] = labelID
         current_face_number += 1
 
-    print("[INFO] Writing grid of faces for", labelID)
+    logging.info("Writing grid of faces for " + str(labelID))
     face_grid.save('faces/' + (str(labelID) if labelID != -1 else 'unknown') + '.jpg')
 
-print("[INFO] Writing encodings to file...")
+logging.info("Writing encodings to file...")
 f = open('faces/cluster.pickle', "wb")
 f.write(pickle.dumps(data))
 f.close()
