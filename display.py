@@ -11,10 +11,10 @@ class Display():
         # Rotation: 'None', 'CW', 'CCW', 'flip'
         if virtual:
             from IT8951.display import VirtualEPDDisplay
-            self.display = VirtualEPDDisplay(dims=(1872, 1404), rotate=None)
+            self.display = VirtualEPDDisplay(dims=(1872, 1404), rotate='CW')
         else:
             from IT8951.display import AutoEPDDisplay
-            self.display = AutoEPDDisplay(vcom=-2.06, rotate=None, spi_hz=24000000)
+            self.display = AutoEPDDisplay(vcom=-2.06, rotate='CW', spi_hz=24000000)
             print('[INFO] VCOM set to', self.display.epd.get_vcom())
             
         self.width = self.display.epd.width
@@ -37,5 +37,7 @@ class Display():
         self.display.frame_buf.paste(0xFF, box=(0, 0, self.display.width, self.display.height))
         dims = (self.display.width, self.display.height)
         image.thumbnail(dims)
+        image = image.convert("L")
+        image = image.point(lambda x: int(x/17)*17)
         self.display.frame_buf.paste(image, (0, 0, image.size[0], image.size[1]))
         self.display.draw_full(constants.DisplayModes.GC16)
