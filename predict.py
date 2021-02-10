@@ -20,7 +20,6 @@ class App():
         
         self.pictures = []
         self.track_img_ndex = 0
-        self.face_clusters_found = self.prev_face_clusters_found = []
         self.cam_image = None
 
     def start_threads(self):
@@ -77,54 +76,42 @@ class App():
 
     def sort_remove_duplicates(self, array, min_occurences):
         new_array = [ele for ele in array if array.count(ele) >= min_occurences]
-        new_array = sorted(set(new_array), key = lambda ele: new_array.count(ele)) 
+        new_array = sorted(set(new_array), key = lambda ele: array.count(ele)) 
         return new_array
 
     def set_new_pictures(self, image_paths):
         logging.info("Setting new pictures " + str(len(image_paths)))
-        self.pictures = image_paths
-        self.track_img_ndex = 0
+        if set(self.pictures) != set(image_paths):
+            self.track_img_ndex = 0
+            self.pictures = image_paths
 
     def find_faces(self):
         while True:
             self.cam_image = self.get_camera_image()
+            self.display.set_cam_image(Image.fromarray(self.cam_image))
+            self.display.update()
             if self.cam_image is not None:
-                self.face_clusters_found = self.get_image_features(self.cam_image)
-
-                if self.face_clusters_found != self.prev_face_clusters_found:
-                    self.prev_face_clusters_found = self.face_clusters_found
-                    logging.info("Recognised new faces..." + str(self.face_clusters_found))                
-                    
-                    related_faces = ['photos/'+face['imagePath'] for face in self.data if face['cluster'] in self.face_clusters_found]
-                    image_paths = self.sort_remove_duplicates(related_faces, len(self.face_clusters_found))
+                face_clusters_found = self.get_image_features(self.cam_image)
+                logging.info("Recognised new faces..." + str(face_clusters_found))                
+                if len(face_clusters_found) > 0:
+                    related_faces = ['photos/'+face['imagePath'] for face in self.data if face['cluster'] in face_clusters_found]
+                    image_paths = self.sort_remove_duplicates(related_faces, len(face_clusters_found))
                     self.set_new_pictures(image_paths)
-                else:
-                    logging.info("No new faces found..." + str(self.face_clusters_found))
 
             time.sleep(10)
         
     def show_slides(self):
         while True:
-            if self.track_img_ndex >= len(self.pictures):
-                self.track_img_ndex = 0
-
             if len(self.pictures) > 0:
                 x = self.pictures[self.track_img_ndex]
-                self.track_img_ndex += 1
                 image = Image.open(x)
                 self.display.set_main_image(image)
-
-            if self.cam_image is not None:
-                img = Image.fromarray(self.cam_image)
-                self.display.set_cam_image(img)
+                self.display.update()
+                self.track_img_ndex = self.track_img_ndex+1 if self.track_img_ndex < len(self.pictures) else 0
                 
-            self.display.update()
-
             time.sleep(3)
-
 
 if __name__ == '__main__':
     app = App()
     app.load_face_data()
     app.start_threads()
-
