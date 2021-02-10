@@ -260,7 +260,7 @@ class Display():
         my = cy + (ry*3/4 * math.sin(((minute*6)+270) * math.pi / 180))
         draw.line((cx, cy, mx, my), fill=8*16, width=5)
 
-        font = ImageFont.truetype('./digital-7/digital-7 (mono).ttf', 80)
+        font = ImageFont.truetype('./ds_digital/DS-DIGIB.TTF', 80)
         digital_time = x.strftime("%H:%M %p")
         draw.text(((x1+x2)/2, y2+50), digital_time, font=font, anchor="mm", fill=6*16)
 
