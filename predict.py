@@ -54,9 +54,10 @@ class App():
         camera.release()
         return img
     
-    def get_image_features(self, image):
-        img_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        boxes = face_recognition.face_locations(img_gray, model='hog')
+    def get_image_features(self, image, scale_factor=1.0):
+        small_img = cv2.resize(image, (0, 0), fx=scale_factor, fy=scale_factor)
+        boxes = face_recognition.face_locations(small_img, model='hog')
+        boxes = [tuple(int(b/scale_factor) for b in box) for box in boxes]
         logging.info("Detected face count " + str(len(boxes)))
         clusters = []
 
@@ -91,7 +92,7 @@ class App():
             self.display.set_cam_image(Image.fromarray(self.cam_image))
             self.display.update()
             if self.cam_image is not None:
-                face_clusters_found = self.get_image_features(self.cam_image)
+                face_clusters_found = self.get_image_features(self.cam_image, 0.5)
                 logging.info("Recognised new faces..." + str(face_clusters_found))                
                 if len(face_clusters_found) > 0:
                     related_faces = ['photos/'+face['imagePath'] for face in self.data if face['cluster'] in face_clusters_found]
@@ -103,6 +104,8 @@ class App():
     def show_slides(self):
         while True:
             if len(self.pictures) > 0:
+                if self.track_img_ndex > len(self.pictures):
+                    self.track_img_ndex = 0
                 x = self.pictures[self.track_img_ndex]
                 image = Image.open(x)
                 self.display.set_main_image(image)
