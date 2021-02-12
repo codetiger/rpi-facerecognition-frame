@@ -104,7 +104,7 @@ class App():
     def show_slides(self):
         while True:
             if len(self.pictures) > 0:
-                if self.track_img_ndex > len(self.pictures):
+                if self.track_img_ndex >= len(self.pictures):
                     self.track_img_ndex = 0
                 x = self.pictures[self.track_img_ndex]
                 image = Image.open(x)
