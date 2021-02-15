@@ -31,6 +31,7 @@ class App():
         logging.info("Started display thread...")
     
     def load_face_data(self):
+        logging.info("Loading face data from file...")
         self.data = pickle.loads(open('faces/cluster.pickle', "rb").read())
         self.known_face_encodings = []
         self.known_clusters = []
